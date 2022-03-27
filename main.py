@@ -42,6 +42,7 @@ class DataClustering:
 
     def add_labels_to_DS(self):### ADD LABELS TO THE TABLE ###
         self.dataset['label'] = np.asarray(self.label)
+        return print('the labels were successfully added :)')
 
     def sort_elements(kmeans):
         zero = []
@@ -72,6 +73,7 @@ class DataClustering:
     def save_new_dataframe(self, filename):
 
         self.dataset.to_excel(filename)
+        return print('the file is successfully saved in {}'.format(filename))
 
 if __name__ == '__main__':
     ### LOAD DATA ###
