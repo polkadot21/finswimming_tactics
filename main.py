@@ -3,10 +3,6 @@ import numpy as np
 
 from scipy.cluster.vq import kmeans2
 
-from scipy.cluster import hierarchy
-from scipy.cluster.hierarchy import dendrogram
-import matplotlib.pyplot as plt
-
 ### LOAD DATA ###
 _PATH_ = 'Work table.csv'
 dataset = pd.read_csv(_PATH_, sep = ';', header = None)
@@ -26,9 +22,9 @@ def scale(arr):
         arr_normalized[i, :] = (arr[i, :] - np.min(arr[i, :])) / (np.max(arr[i, :]) - np.min(arr[i, :])) #MqxMinScaling
         print()
 
-    return mean_list, std_list, arr_normalized
+    return min_list, max_list, arr_normalized
 
-mean_list, std_list, scaled_matrix = scale(dataset_matrix)
+min_list, max_list, scaled_matrix = scale(dataset_matrix)
 
 """
 ### Agglomerarive Clustering
@@ -36,7 +32,6 @@ Z = hierarchy.linkage(scaled_matrix, 'single')
 plt.figure()
 dn = hierarchy.dendrogram(Z) # 6 categories
 """
-print(mean_list)
 print(scaled_matrix)
 
 #KMeans
