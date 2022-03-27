@@ -17,13 +17,14 @@ dataset = dataset.astype('float32') #str to float
 dataset_matrix = dataset.to_numpy() #vectorize
 
 def scale(arr):
-    mean_list = []
-    std_list = []
+    min_list = []
+    max_list = []
     arr_normalized = np.zeros(shape = arr.shape)
     for i in range(arr.shape[0]):
-        mean_list.append(np.mean(arr[i, :]))
-        std_list.append(np.std(arr[i, :], ddof = 1))
-        arr_normalized[i, :]  = (arr[i, :] - mean_list[i]) / std_list[i]
+        min_list.append(np.min(arr[i, :]))
+        max_list.append(np.max(arr[i, :]))
+        arr_normalized[i, :] = (arr[i, :] - np.min(arr[i, :])) / (np.max(arr[i, :]) - np.min(arr[i, :])) #MqxMinScaling
+        print()
 
     return mean_list, std_list, arr_normalized
 
@@ -51,7 +52,6 @@ def sort_elements(kmeans):
     second = []
     third = []
     forth = []
-
 
     for element in kmeans.labels_:
         if element ==0:
