@@ -1,73 +1,90 @@
 import pandas as pd
 import numpy as np
-
 from scipy.cluster.vq import kmeans2
+from argparse import ArgumentParser
+import sys
 
-### LOAD DATA ###
-_PATH_ = 'Work table.csv'
-dataset = pd.read_csv(_PATH_, sep = ';', header = None)
-dataset = dataset.applymap(lambda x: str(x.replace(',','.'))) #comma to dots
-dataset = dataset.astype('float32') #str to float
+class DataClustering:
 
-## NORMALIZE DATA ###
-dataset_matrix = dataset.to_numpy() #vectorize
+    def __init__(self, _PATH_):
+        self._PATH_ = _PATH_
 
-def scale(arr):
-    min_list = []
-    max_list = []
-    arr_normalized = np.zeros(shape = arr.shape)
-    for i in range(arr.shape[0]):
-        min_list.append(np.min(arr[i, :]))
-        max_list.append(np.max(arr[i, :]))
-        arr_normalized[i, :] = (arr[i, :] - np.min(arr[i, :])) / (np.max(arr[i, :]) - np.min(arr[i, :])) #MqxMinScaling
-        print()
+    def _load_data(self):
+        dataset = pd.read_csv(self._PATH_, sep=';', header=None)
+        dataset = pd.read_csv(self._PATH_, sep = ';', header = None)
+        dataset = dataset.applymap(lambda x: str(x.replace(',','.'))) #comma to dots
+        dataset = dataset.astype('float32') #str to float
+        self.dataset = dataset
+        return dataset.to_numpy() #vectorize
 
-    return min_list, max_list, arr_normalized
+    def scale(self, arr):
+        if not isinstance(arr, (np.ndarray, np.generic)):
+            arr = arr.to_numpy()
+        min_list = []
+        max_list = []
+        arr_normalized = np.zeros(shape = arr.shape)
+        for i in range(arr.shape[0]):
+            min_list.append(np.min(arr[i, :]))
+            max_list.append(np.max(arr[i, :]))
+            arr_normalized[i, :] = (arr[i, :] - np.min(arr[i, :])) / (np.max(arr[i, :]) - np.min(arr[i, :])) #MqxMinScaling
 
-min_list, max_list, scaled_matrix = scale(dataset_matrix)
 
-"""
-### Agglomerarive Clustering
-Z = hierarchy.linkage(scaled_matrix, 'single')
-plt.figure()
-dn = hierarchy.dendrogram(Z) # 6 categories
-"""
-print(scaled_matrix)
+        return min_list, max_list, arr_normalized
 
-#KMeans
-centroid, label = kmeans2(scaled_matrix, 3, minit='random')
-print('labels are {}'.format(label))
+    def kmeans_cluster(self, scaled_matrix, k):
+        #KMeans
+        #if scaled_matrix.ndim == 2:
+         #   scaled_matrix=np.squeeze(scaled_matrix, axis=1)
+        centroid, label = kmeans2(scaled_matrix, k, minit='random')
+        self.label = label
+        print('labels are {}'.format(label))
+        return label
 
-### ADD LABELS TO THE TABLE ###
-dataset['label'] = np.asarray(label)
+    def add_labels_to_DS(self):### ADD LABELS TO THE TABLE ###
+        self.dataset['label'] = np.asarray(self.label)
 
-def sort_elements(kmeans):
-    zero = []
-    first = []
-    second = []
-    third = []
-    forth = []
+    def sort_elements(kmeans):
+        zero = []
+        first = []
+        second = []
+        third = []
+        forth = []
 
-    for element in kmeans.labels_:
-        if element ==0:
-            zero.append(element)
-        elif element == 1:
-            first.append(element)
-        elif element == 2:
-            second.append(element)
-        elif element == 3:
-            third.append(element)
-        elif element == 4:
-            forth.append(element)
+        for element in kmeans.labels_:
+            if element ==0:
+                zero.append(element)
+            elif element == 1:
+                first.append(element)
+            elif element == 2:
+                second.append(element)
+            elif element == 3:
+                third.append(element)
+            elif element == 4:
+                forth.append(element)
 
-    print('the number of class zero is {}'.format(len(zero)))
-    print('the number of class one is {}'.format(len(first)))
-    print('the number of class two is {}'.format(len(second)))
-    print('the number of class three is {}'.format(len(third)))
-    print('the number of class four is {}'.format(len(forth)))
-    return
+        print('the number of class zero is {}'.format(len(zero)))
+        print('the number of class one is {}'.format(len(first)))
+        print('the number of class two is {}'.format(len(second)))
+        print('the number of class three is {}'.format(len(third)))
+        print('the number of class four is {}'.format(len(forth)))
+        return
+
+    def save_new_dataframe(self, filename):
+
+        self.dataset.to_excel(filename)
 
 if __name__ == '__main__':
-    filename = 'Work_table_with_lables.xlsx'
-    dataset.to_excel(filename)
-    #sort_elements(kmeans)
+    ### LOAD DATA ###
+    _PATH_ = 'Work table.csv'
+    cls = DataClustering(_PATH_)
+    DS = cls._load_data()
+    min_list, max_list, arr_normalized = cls.scale(DS)
+
+    k = int(sys.argv[1])
+    cls.kmeans_cluster(arr_normalized, k)
+    cls.add_labels_to_DS()
+
+    _SAVE_PATH_= sys.argv[2]
+    cls.save_new_dataframe(_SAVE_PATH_)
+
+
