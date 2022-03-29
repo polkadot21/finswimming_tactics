@@ -35,7 +35,7 @@ class DataClustering:
         #KMeans
         #if scaled_matrix.ndim == 2:
          #   scaled_matrix=np.squeeze(scaled_matrix, axis=1)
-        centroid, label = kmeans2(scaled_matrix, k, minit='random')
+        centroid, label = kmeans2(scaled_matrix, k, minit='points')
         self.label = label
         print('labels are {}'.format(label))
         return label
@@ -72,7 +72,7 @@ class DataClustering:
 
     def save_new_dataframe(self, filename):
 
-        self.dataset.to_excel(filename)
+        self.dataset.to_csv(filename)
         return print('the file is successfully saved in {}'.format(filename))
 
 if __name__ == '__main__':
