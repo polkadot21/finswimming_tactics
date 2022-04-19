@@ -3,3 +3,6 @@ numpy
 scipy
 tslearn
 beautifulsoup4
+flask
+Flask-Excel
+tablib
