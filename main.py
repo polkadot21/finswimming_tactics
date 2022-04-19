@@ -1,29 +1,43 @@
 import pandas as pd
 import numpy as np
-from matplotlib import pyplot as plt
 from scipy.cluster.vq import kmeans2
 from argparse import ArgumentParser
 import sys
 from tslearn.clustering import TimeSeriesKMeans, KShape
 
 
-class DataClustering:
+class FinswimmingTactics:
 
-    def __init__(self, _PATH_):
-        self.normalized_df = None
-        self.arr_normalized = None
+    def __init__(self, FILE_PATH: str):
+
+        """
+        FILE_PATH : str
+            The path to an Excel file with a performance MxN matrix, where M is the number of athletes and N is the
+            number of splits
+
+        """
+        self.df = None
+        self.normalized_arr = None
         self.labels = None
-        self._PATH_ = _PATH_
+        self.normalized_df = None
+
+        self.FILE_PATH = FILE_PATH
 
     def _load_data(self):
-        dataset = pd.read_csv(self._PATH_, sep=';', header=None)
-        dataset = pd.read_csv(self._PATH_, sep = ';', header = None)
-        dataset = dataset.applymap(lambda x: str(x.replace(',','.'))) #comma to dots
-        dataset = dataset.astype('float32') #str to float
-        self.dataset = dataset
-        return dataset.to_numpy() #vectorize
+        df = pd\
+            .read_csv(self.FILE_PATH, sep = ';', header = None) \
+            .applymap(lambda x: str(x.replace(',', '.')))\
+            .astype('float32') #str to float
 
-    def scale(self, arr):
+        self.df = df
+        return df.to_numpy() #vectorize
+
+    def min_max_scale(self, arr):
+
+        """
+        A custom implementation of MinMax scaling
+        """
+
         if not isinstance(arr, (np.ndarray, np.generic)):
             arr = arr.to_numpy()
         min_list = []
@@ -48,7 +62,7 @@ class DataClustering:
         print('labels are {}'.format(self.labels))
         return self.labels
 
-    def kshapes(self,
+    def kshapes_cluster(self,
                 scaled_matrix: np.array,
                 k: int,
                 ):
@@ -67,7 +81,7 @@ class DataClustering:
 
     def add_labels_to_DS(self, normalized_values: bool = False):### ADD LABELS TO THE TABLE ###
         if normalized_values:
-            normalized_df = pd.DataFrame(self.arr_normalized)
+            normalized_df = pd.DataFrame(self.normalized_arr)
             normalized_df['label'] = np.asarray(self.labels)
             print(normalized_df)
             self.normalized_df = normalized_df
@@ -75,10 +89,11 @@ class DataClustering:
             return self
 
         else:
-            self.dataset['label'] = np.asarray(self.labels)
+            self.df['label'] = np.asarray(self.labels)
             print('the labels were successfully added :)')
             return self
 
+    #TODO: customize this function for k clusters
     def sort_elements(self, kmeans):
         zero = []
         first = []
@@ -107,7 +122,7 @@ class DataClustering:
 
     def save_new_dataframe(self, filename: str, normalized_values: bool = False):
         if not normalized_values:
-            self.dataset.to_csv(filename)
+            self.df.to_csv(filename)
             return print('the file is successfully saved in {}'.format(filename))
         else:
             self.normalized_df.to_csv(filename)
@@ -116,13 +131,13 @@ class DataClustering:
 if __name__ == '__main__':
     ### LOAD DATA ###
     _PATH_ = 'Work table.csv'
-    cls = DataClustering(_PATH_)
+    cls = FinswimmingTactics(_PATH_)
     DS = cls._load_data()
-    min_list, max_list, arr_normalized = cls.scale(DS)
+    min_list, max_list, arr_normalized = cls.min_max_scale(DS)
 
     #k = int(sys.argv[1])
     k = 3
-    cls.kshapes(arr_normalized, k)
+    cls.kshapes_cluster(arr_normalized, k)
     cls.add_labels_to_DS(normalized_values=True)
 
     #_SAVE_PATH_= sys.argv[2]
@@ -132,12 +147,12 @@ if __name__ == '__main__':
     means = [np.mean(cls.normalized_df[cls.normalized_df['label'] == i]) for i in range(0, 3)]
 
     #print(np.asarray(means[0][:-1]))
-
+    """
     plt.figure(figsize = (16, 9 ))
     for i in range (0, 3):
         plt.plot(np.asarray(means[i][:-1]))
     plt.title('Три стратегии проплывания дистанции 200м плавание в ластах')
     plt.show()
-
+    """
 
 
