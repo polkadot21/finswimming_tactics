@@ -1,6 +1,8 @@
 import pandas as pd
 import numpy as np
 from urllib.request import urlopen
+from bs4 import BeautifulSoup
+
 
 def compute_scores(B: int, T:int) -> int:
     """
@@ -21,10 +23,9 @@ def compute_scores(B: int, T:int) -> int:
 
 def scrape_wr(url: str = 'https://www.cmas.org/world-records'):
     page = urlopen(url)
-    html_bytes = page.read()
-    html = html_bytes.decode("utf-8")
-    records_ = html.find("records_table")
-    print(records_)
+    html = page.read().decode("utf-8")
+    soup = BeautifulSoup(html, "html.parser")
+    print(soup.get_text()[33:1330])
 
 class RankingSystem:
 
