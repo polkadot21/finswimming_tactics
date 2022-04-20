@@ -14,7 +14,7 @@ import numpy as np
 
 app=Flask(__name__)
 
-@app.route("/upload", methods=['GET', 'POST'])
+@app.route("/", methods=['GET', 'POST'])
 def upload_file():
     if request.method == 'POST':
         print(request.files['file'])
