@@ -4,14 +4,11 @@ tiny_example.py
 :copyright: (c) 2015 by C. W.
 :license: GPL v3 or BSD
 """
-from datetime import datetime
 
 import flask
-from flask import Flask, request, jsonify
-from tablib import Dataset
+from flask import Flask, request
 import flask_excel as excel
 import pandas as pd
-import numpy as np
 from utils import _reformat_tables_xls
 
 

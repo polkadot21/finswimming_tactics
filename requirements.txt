@@ -5,5 +5,5 @@ tslearn
 beautifulsoup4
 flask
 Flask-Excel
-tablib
+openpyxl
 gunicorn
