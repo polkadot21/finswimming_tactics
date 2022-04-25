@@ -10,7 +10,7 @@ from flask import Flask, request
 import flask_excel as excel
 import pandas as pd
 from utils import _reformat_tables_xls
-from finswimming_tactics.utils._ranking_system import RankingSystem
+from utils import _ranking_system
 
 app=Flask(__name__)
 
@@ -23,7 +23,7 @@ def upload_file():
         data_reformater = _reformat_tables_xls.ExcelTable(table = data_xls)
         data_xls = data_reformater.return_table(reformat=True)
 
-        RS = RankingSystem(df=data_xls)
+        RS = _ranking_system.RankingSystem(df=data_xls)
         df_with_scores = RS.return_df_with_scores()
 
         text_file = open("templates/table.html", "w")

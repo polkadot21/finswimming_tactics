@@ -40,7 +40,7 @@ def time_to_sec(time: datetime.time) -> int:
 
 class RankingSystem:
 
-    def __init__(self, FILE_PATH: Optional[str] = None, df: Optional[pd.DataFrame]=None):
+    def __init__(self, FILE_PATH: Optional[str] = None, df: Optional[pd.DataFrame] = None):
 
         """
         FILE_PATH : str
