@@ -6,11 +6,14 @@ tiny_example.py
 """
 from datetime import datetime
 
+import flask
 from flask import Flask, request, jsonify
 from tablib import Dataset
 import flask_excel as excel
 import pandas as pd
 import numpy as np
+from utils import _reformat_tables_xls
+
 
 app=Flask(__name__)
 
@@ -20,58 +23,16 @@ def upload_file():
         print(request.files['file'])
         f = request.files['file']
         data_xls = pd.read_excel(f, header=11)[['Место', 'Результат']]
-        data_xls['Изначальный индекс'] = data_xls.index+12
 
-        data_xls = data_xls.dropna(how='all')
+        data_reformater = _reformat_tables_xls.ExcelTable(table = data_xls)
+        data_xls = data_reformater.return_table(reformat=True)
 
-        print(data_xls)
+        text_file = open("templates/table.html", "w")
+        text_file.write(data_xls.to_html())
+        text_file.close()
 
-        #### ADD EVENTS
-        for idx, value in enumerate(data_xls['Место']):
-            if not isinstance(value, str):
-                data_xls['Место'].iloc[idx] = np.NaN
-            elif 'плавание' not in value:
-                data_xls['Место'].iloc[idx] = np.NaN
-
-        #### ADD FIRST EVENT
-        data_xls['Место'].iloc[0] = 'плавание в ластах - 50 м, девочки'
-
-        ###FILL ALL Values with EVENTS
-        data_xls['Место'] = data_xls['Место'].fillna(method='ffill')
-
-        #### FILL NA In Times
-        for idx, value in enumerate(data_xls['Результат']):
-            if isinstance(value, str):
-                data_xls['Результат'].iloc[idx] = np.NaN
-            elif not isinstance(value, type(data_xls['Результат'].iloc[0])):
-                data_xls['Результат'].iloc[idx] = np.NaN
-
-        data_xls = data_xls.dropna(how='any')
-
-        return data_xls.to_html()
-    return '''
-    <!doctype html>
-    <title>Upload an excel file</title>
-    <form action="" method=post enctype=multipart/form-data>
-    <p><input type=file name=file><input type=submit value=Upload>
-   </form>
-    '''
-
-@app.route("/download", methods=['GET'])
-def download_file():
-    return excel.make_response_from_array([[1, 2], [3, 4]], "csv")
-
-
-@app.route("/export", methods=['GET'])
-def export_records():
-    return excel.make_response_from_array([[1, 2], [3, 4]], "csv",
-                                          file_name="export_data")
-
-
-@app.route("/download_file_named_in_unicode", methods=['GET'])
-def download_file_named_in_unicode():
-    return excel.make_response_from_array([[1, 2], [3, 4]], "csv",
-                                          file_name=u"中文文件名")
+        return flask.render_template('table.html')
+    return flask.render_template('index.html')
 
 
 # insert database related code here
