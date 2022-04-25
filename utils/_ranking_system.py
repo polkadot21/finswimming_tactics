@@ -6,8 +6,7 @@ import numpy as np
 from urllib.request import urlopen
 from bs4 import BeautifulSoup
 
-from finswimming_tactics.utils import _reformat_tables_xls
-pd.options.mode.chained_assignment = None  # default='warn'
+#pd.options.mode.chained_assignment = None  # default='warn'
 
 
 def compute_scores(B: int, T: int) -> int:
