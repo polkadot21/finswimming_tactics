@@ -7,12 +7,16 @@ class ExcelTable:
         self.table = table
 
     def _add_index_column(self):
+        """Add index column"""
         self.table['Изначальный индекс'] = self.table.index + 12
         self.table = self.table.dropna(how='all')
         return self
 
     def _add_events(self):
         """ADD EVENTS"""
+
+        self._add_index_column()
+
         for idx, value in enumerate(self.table['Место']):
             if not isinstance(value, str):
                 self.table['Место'].iloc[idx] = np.NaN

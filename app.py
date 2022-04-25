@@ -31,7 +31,7 @@ def upload_file():
         text_file.write(data_xls.to_html())
         text_file.close()
 
-        return flask.render_template('table.html')
+        return flask.redirect(flask.url_for('show_table'))
     return flask.render_template('index.html')
 
 @app.route("/table")
