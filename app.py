@@ -34,6 +34,10 @@ def upload_file():
         return flask.render_template('table.html')
     return flask.render_template('index.html')
 
+@app.route("/table")
+def show_table():
+    return flask.render_template("table.html")
+
 
 # insert database related code here
 if __name__ == "__main__":
