@@ -58,7 +58,7 @@ class RankingSystem:
             self.FILE_PATH=FILE_PATH
 
         self.performance_column = None
-
+    """
     def _load_data(self):
         if not isinstance(self.FILE_PATH, type(None)):
             df = pd \
@@ -70,7 +70,7 @@ class RankingSystem:
             return self
         else:
             print('the file path was not provided')
-
+    """
     def _extract_performance(self):
         if isinstance(self.df, type(None)):
             self._load_data()
@@ -103,17 +103,3 @@ class RankingSystem:
         return self.df
 
 
-if __name__ == '__main__':
-    FILE_PATH = '/Users/evgenysaurov/PycharmProjects/finswimming_tactics/finswimming_tactics/data/2022_04_15-16_PgYa.xlsx'
-
-
-    data_xls = pd.read_excel(FILE_PATH, header=11)[['Место', 'Результат']]
-
-    data_reformater = _reformat_tables_xls.ExcelTable(table=data_xls)
-    data_xls = data_reformater.return_table(reformat=True)
-
-    print(data_xls.columns)
-
-    RS = RankingSystem(df=data_xls)
-    df_with_scores = RS.return_df_with_scores()
-    print(df_with_scores)
