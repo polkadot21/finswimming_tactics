@@ -6,3 +6,4 @@ beautifulsoup4
 flask
 Flask-Excel
 tablib
+gunicorn
