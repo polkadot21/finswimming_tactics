@@ -7,3 +7,4 @@ flask
 Flask-Excel
 openpyxl
 gunicorn
+tabula

@@ -6,7 +6,8 @@ import numpy as np
 from urllib.request import urlopen
 from bs4 import BeautifulSoup
 
-#pd.options.mode.chained_assignment = None  # default='warn'
+
+# pd.options.mode.chained_assignment = None  # default='warn'
 
 
 def compute_scores(B: int, T: int) -> int:
@@ -25,13 +26,6 @@ def compute_scores(B: int, T: int) -> int:
 
     P = int(1000 * ((B / T) ** 3))
     return P
-
-
-def scrape_wr(url: str = 'https://www.cmas.org/world-records'):
-    page = urlopen(url)
-    html = page.read().decode("utf-8")
-    soup = BeautifulSoup(html, "html.parser")
-    print(soup.get_text()[33:1330])
 
 def time_to_sec(time: datetime.time) -> int:
     return 60 * time.minute + time.second
@@ -54,9 +48,10 @@ class RankingSystem:
         if isinstance(FILE_PATH, type(None)):
             self.FILE_PATH = None
         else:
-            self.FILE_PATH=FILE_PATH
+            self.FILE_PATH = FILE_PATH
 
         self.performance_column = None
+
     """
     def _load_data(self):
         if not isinstance(self.FILE_PATH, type(None)):
@@ -70,6 +65,7 @@ class RankingSystem:
         else:
             print('the file path was not provided')
     """
+
     def _extract_performance(self):
         if isinstance(self.df, type(None)):
             self._load_data()
@@ -91,10 +87,21 @@ class RankingSystem:
 
         return self
 
+    def _add_wr_column(self):
+        if isinstance(self.performance_column, type(None)):
+            self._extract_performance()
+        self.df['Мировой рекорд'] = self.performance_column
+
+        return self
+
     def _compute_scores(self):
         self._add_scores_column()
+        self._add_wr_column()
         for idx, value in enumerate(self.df["Количество очков"]):
-            self.df["Количество очков"].iloc[idx] = compute_scores(10, time_to_sec(value))
+
+            wr = self.df["Мировой рекорд"].iloc[idx]
+
+            self.df["Количество очков"].iloc[idx] = compute_scores(time_to_sec(wr), time_to_sec(value))
         return self
 
     def return_df_with_scores(self):
