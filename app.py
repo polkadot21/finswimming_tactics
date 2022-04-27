@@ -18,6 +18,10 @@ app=Flask(__name__)
 def upload_file():
     if request.method == 'POST':
         f = request.files['file']
+        if f == "<FileStorage: '2022_04_15-16_PgYa.xlsx' ('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')>":
+            print(f)
+        else:
+            f = '../finswimming_tactics/data/2022_04_15-16_PgYa.xlsx'
         data_xls = pd.read_excel(f, header=11)[['Место', 'Результат']]
 
         data_reformater = _reformat_tables_xls.ExcelTable(table = data_xls)
