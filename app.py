@@ -11,8 +11,8 @@ from flask import Flask, request
 import flask_excel as excel
 import pandas as pd
 
-from finswimming_tactics.utils._add_wr_to_data import _add_wr_with_to_data
-from finswimming_tactics.utils._scrape_wr import WRScraper
+from utils._add_wr_to_data import _add_wr_with_to_data
+from utils._scrape_wr import WRScraper
 from utils import _reformat_tables_xls
 from utils import _ranking_system
 
