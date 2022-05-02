@@ -1,9 +1,4 @@
-# -*- coding: utf-8 -*-
-"""
-tiny_example.py
-:copyright: (c) 2015 by C. W.
-:license: GPL v3 or BSD
-"""
+
 from datetime import datetime
 
 import flask
