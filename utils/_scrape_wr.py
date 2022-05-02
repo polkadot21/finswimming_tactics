@@ -1,22 +1,8 @@
 from urllib.request import urlopen
-
 import numpy as np
 import pandas as pd
 from bs4 import BeautifulSoup
-
 from tabula.io import read_pdf
-
-
-def scrape_wr(url: str = 'https://www.cmas.org/world-records'):
-    page = urlopen(url)
-    html = page.read().decode("utf-8")
-    soup = BeautifulSoup(html, "html.parser")
-    line = soup.find_all("a", "extension pdf even")[0]
-    # TODO: extract the link from the line
-
-
-file_path = '/Users/evgenysaurov/PycharmProjects/finswimming_tactics/finswimming_tactics/data/005823-1-2022_03_01_' \
-            'CMAS_FS_WORLD.pdf'
 
 
 def english_events_to_russian(value: str) -> str:
@@ -54,47 +40,93 @@ def english_events_to_russian(value: str) -> str:
     }[value]
 
 
-def extract_wr(file_path: str):
-    df = read_pdf(file_path, stream=True)[0][['MEN/HOMMES']]
-    # print(df)
-    df[['Дистанция', 'Мировой рекорд']] = df['MEN/HOMMES'].str.split(" ", 1, expand=True)
+class WRScraper:
+    def __init__(self, url: str, file_path: str):
+        self.file_path = file_path
+        self.url = url
+        self.df = None
 
-    list_of_events = ["SURFACE", "RELAY", "IMMERSION", "BI"]
-    event = None
-    sex = "MEN/HOMMES"
-    for idx, value in enumerate(df["Дистанция"]):
-        if value in list_of_events:
-            event = value
+    def scrape_wr(self):
+        page = urlopen(self.url)
+        html = page.read().decode("utf-8")
+        soup = BeautifulSoup(html, "html.parser")
+        line = soup.find_all("a", "extension pdf even")[0]
+        # TODO: extract the link from the line
 
-        if "WOMEN/DAMES" in value:
-            sex = "WOMEN/DAMES"
+    def extract_wr(self) -> 'WRScraper':
+        df = read_pdf(self.file_path, stream=True)[0][['MEN/HOMMES']]
+        # print(df)
+        df[['Дистанция', 'Мировой рекорд']] = df['MEN/HOMMES'].str.split(" ", 1, expand=True)
 
-        if idx + 1 <= len(df) - 1:
-            if not df["Дистанция"].iloc[idx + 1] in list_of_events:
-                df["Дистанция"].iloc[idx + 1] = event + ' ' + df["Дистанция"].iloc[idx + 1] + ' ' + sex
+        list_of_events = ["SURFACE", "RELAY", "IMMERSION", "BI"]
+        event = None
+        sex = "MEN/HOMMES"
+        for idx, value in enumerate(df["Дистанция"]):
+            if value in list_of_events:
+                event = value
+
+            if "WOMEN/DAMES" in value:
+                sex = "WOMEN/DAMES"
+
+            if idx + 1 <= len(df) - 1:
+                if not df["Дистанция"].iloc[idx + 1] in list_of_events:
+                    df["Дистанция"].iloc[idx + 1] = event + ' ' + df["Дистанция"].iloc[idx + 1] + ' ' + sex
+                else:
+                    pass
             else:
-                pass
-        else:
-            break
+                break
+        self.df = df.drop(columns='MEN/HOMMES')
 
-    return df.drop(columns='MEN/HOMMES')
+        return self
 
+    def drop_none_results(self) -> 'WRScraper':
+        if isinstance(self.df, type(None)):
+            self.extract_wr()
+        for idx, value in enumerate(self.df['Мировой рекорд']):
+            if isinstance(value, type(None)) or value == 'FINS':
+                self.df['Мировой рекорд'].iloc[idx] = np.NAN
+        self.df = self.df.dropna()
 
-def drop_none_results(df: pd.DataFrame) -> pd.DataFrame:
-    for idx, value in enumerate(df['Мировой рекорд']):
-        if isinstance(value, type(None)) or value == 'FINS':
-            df['Мировой рекорд'].iloc[idx] = np.NAN
+        return self
 
-    return df.dropna()
+    def translate_events(self) -> 'WRScraper':
+        self.drop_none_results()
+        for idx, value in enumerate(self.df['Дистанция']):
+            self.df['Дистанция'].iloc[idx] = english_events_to_russian(value)
+        return self
 
-def translate_events(df: pd.DataFrame) -> pd.DataFrame:
-    for idx, value in enumerate(df['Дистанция']):
-        df['Дистанция'].iloc[idx] = english_events_to_russian(value)
+    def remove_spaces(self) -> "WRScraper":
+        self.translate_events()
+        if "Мировой рекорд" in self.df.columns:
+            for idx, value in enumerate(self.df["Мировой рекорд"]):
+                if 'x ' in value:
+                    self.df["Мировой рекорд"].iloc[idx] = value.split(' ')[-1]
+        return self
 
-    return df
+    def wr_to_datetime(self) -> "WRScraper":
+        self.remove_spaces()
+        self.df["Мировой рекорд"] = pd.to_datetime(self.df["Мировой рекорд"])
+        return self
+
+    def wr_to_sec(self) -> "WRScraper":
+        self.wr_to_datetime()
+
+        self.df['Мировой рекорд в сек'] = self.df["Мировой рекорд"].dt.hour * 60 \
+                                          + self.df["Мировой рекорд"].dt.minute \
+                                          + self.df["Мировой рекорд"].dt.second / 100
+        return self
+
+    def return_df_with_wr(self):
+        self.wr_to_sec()
+        return self.df
+
 
 if __name__ == "__main__":
-    df = extract_wr(file_path)
-    df = drop_none_results(df)
-    df = translate_events(df)
-    print(df)
+    url = 'https://www.cmas.org/world-records'
+    file_path = '/Users/evgenysaurov/PycharmProjects/finswimming_tactics/finswimming_tactics/data/005823-1-2022_03_01_' \
+                'CMAS_FS_WORLD.pdf'
+    # path_to_save = '/finswimming_tactics/utils/wr.csv'
+
+    wrs = WRScraper(url=url, file_path=file_path)
+    df = wrs.return_df_with_wr()
+    # df.to_csv(path_to_save)

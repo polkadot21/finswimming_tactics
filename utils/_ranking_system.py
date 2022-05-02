@@ -10,7 +10,7 @@ from bs4 import BeautifulSoup
 # pd.options.mode.chained_assignment = None  # default='warn'
 
 
-def compute_scores(B: int, T: int) -> int:
+def compute_scores(B: float, T: float) -> int:
     """
     the score is calculated as a cubic curve
     B : int
@@ -26,6 +26,7 @@ def compute_scores(B: int, T: int) -> int:
 
     P = int(1000 * ((B / T) ** 3))
     return P
+
 
 def time_to_sec(time: datetime.time) -> int:
     return 60 * time.minute + time.second
@@ -95,10 +96,11 @@ class RankingSystem:
         return self
 
     def _compute_scores(self):
-        self._add_scores_column()
-        self._add_wr_column()
+        if "Количество очков" not in self.df.columns:
+            self._add_scores_column()
+        if "Мировой рекорд" not in self.df.columns:
+            self._add_wr_column()
         for idx, value in enumerate(self.df["Количество очков"]):
-
             wr = self.df["Мировой рекорд"].iloc[idx]
 
             self.df["Количество очков"].iloc[idx] = compute_scores(time_to_sec(wr), time_to_sec(value))
@@ -107,5 +109,3 @@ class RankingSystem:
     def return_df_with_scores(self):
         self._compute_scores()
         return self.df
-
-
