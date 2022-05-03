@@ -1,4 +1,3 @@
-
 from datetime import datetime
 
 import flask
@@ -33,7 +32,7 @@ def compute_scores(B: float, T: float) -> int:
 
 
 def time_to_sec(time: datetime.time) -> int:
-    return 60 * time.minute + time.second
+    return 60 * time.minute + time.second + time.microsecond/(1e+6)
 
 
 @app.route("/", methods=['GET', 'POST'])
@@ -44,7 +43,9 @@ def upload_file():
             print(f)
         else:
             f = 'data/2022_04_15-16_PgYa.xlsx'
-        data_xls = pd.read_excel(f, header=11)[['Место', 'Результат']]
+        data = pd.read_excel(f, header=11)
+        print(data)
+        data_xls = data[['Место', 'Результат']]
 
         data_reformater = _reformat_tables_xls.ExcelTable(table=data_xls)
         data_xls = data_reformater.return_table(reformat=True)
@@ -60,21 +61,19 @@ def upload_file():
 
         df_with_scores_and_wr = _add_wr_with_to_data(df=df_with_scores, wr=wr)
 
-        #df_with_scores_and_wr['Результат'] = pd.to_datetime(df_with_scores_and_wr['Результат'])
-
-
-
-        #df_with_scores_and_wr['Результат сек'] = df_with_scores_and_wr['Результат'].dt.hour * 60 \
-        #                                         + df_with_scores_and_wr['Результат'].dt.minute \
-        #                                         + df_with_scores_and_wr['Результат'].dt.second / 100
-
         for idx, value in enumerate(df_with_scores_and_wr['Количество очков']):
             df_with_scores_and_wr['Количество очков'].iloc[idx] \
                 = compute_scores(B=df_with_scores_and_wr['Мировой рекорд'].iloc[idx],
                                  T=time_to_sec(df_with_scores_and_wr['Результат'].iloc[idx]))
 
+        points = df_with_scores_and_wr[['Изначальный индекс', 'Количество очков']]
+        points.index = points['Изначальный индекс'] - 12
+        points = points.drop(columns='Изначальный индекс')
+
+        data = data.join(points, on=data.index)
+
         text_file = open("templates/table.html", "w")
-        text_file.write(df_with_scores_and_wr.to_html())
+        text_file.write(data.to_html())
         text_file.close()
 
         return flask.redirect(flask.url_for('show_table'))

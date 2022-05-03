@@ -113,7 +113,7 @@ class WRScraper:
 
         self.df['Мировой рекорд в сек'] = self.df["Мировой рекорд"].dt.hour * 60 \
                                           + self.df["Мировой рекорд"].dt.minute \
-                                          + self.df["Мировой рекорд"].dt.second / 100
+                                          + round((self.df["Мировой рекорд"].dt.second / 60), 2)
         return self
 
     def return_df_with_wr(self):
@@ -129,4 +129,6 @@ if __name__ == "__main__":
 
     wrs = WRScraper(url=url, file_path=file_path)
     df = wrs.return_df_with_wr()
+
+   #print(df)
     # df.to_csv(path_to_save)
