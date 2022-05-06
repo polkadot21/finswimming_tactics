@@ -130,7 +130,7 @@ class FinswimmingTactics:
 
 if __name__ == '__main__':
     ### LOAD DATA ###
-    _PATH_ = 'Work table.csv'
+    _PATH_ = '../Work table.csv'
     cls = FinswimmingTactics(_PATH_)
     DS = cls._load_data()
     min_list, max_list, arr_normalized = cls.min_max_scale(DS)
